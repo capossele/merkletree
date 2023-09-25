@@ -1,4 +1,5 @@
 use anyhow::Result;
+use serde::{Deserialize, Serialize};
 use std::marker::PhantomData;
 use typenum::marker_traits::Unsigned;
 use typenum::U2;
@@ -15,7 +16,7 @@ use crate::merkle::get_merkle_proof_lemma_len;
 /// ```
 ///
 /// Proof validation is positioned hash against lemma path to match root hash.
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 /// U is the default tree arity (U2 = binary)
 pub struct Proof<T: Eq + Clone + AsRef<[u8]>, BaseTreeArity: Unsigned = U2> {
     // Optional proofs at immediate lower level from current.  Should
