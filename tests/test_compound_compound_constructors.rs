@@ -5,7 +5,9 @@ use typenum::{Unsigned, U0, U2, U8};
 
 use merkletree::hash::Algorithm;
 use merkletree::merkle::{get_merkle_tree_len_generic, Element, MerkleTree};
-use merkletree::store::{DiskStore, MmapStore, Store, StoreConfig, VecStore};
+#[cfg(feature = "std")]
+use merkletree::store::DiskStore;
+use merkletree::store::{MmapStore, Store, StoreConfig, VecStore};
 
 use crate::common::{
     get_vector_of_base_trees, instantiate_new, instantiate_new_with_config,
@@ -104,6 +106,7 @@ fn instantiate_cctree_from_sub_tree_store_configs<
         .expect("failed to instantiate compound-compound tree [instantiate_cctree_from_sub_tree_store_configs]")
 }
 
+#[cfg(feature = "std")]
 fn instantiate_cctree_from_sub_tree_readonly_store_configs<
     E: Element,
     A: Algorithm<E>,
@@ -227,6 +230,7 @@ fn test_compound_compound_constructors() {
     let len = get_merkle_tree_len_generic::<U8, U8, U2>(base_tree_leaves)
         .expect("[test_compound_compound_constructors] couldn't compute Merkle Tree len");
 
+    #[cfg(feature = "std")]
     // this instantiator works only with DiskStore / MmapStore trees
     run_test_compound_compound_tree::<TestItemType, TestXOR128, DiskStore<TestItemType>, U8, U8, U2>(
         instantiate_cctree_from_sub_tree_store_configs,
@@ -236,6 +240,7 @@ fn test_compound_compound_constructors() {
         root_xor128,
     );
 
+    #[cfg(feature = "std")]
     run_test_compound_compound_tree::<
         TestItemType,
         TestSha256Hasher,
@@ -276,6 +281,7 @@ fn test_compound_compound_constructors() {
     );
 }
 
+#[cfg(feature = "std")]
 #[test]
 fn test_with_readonly_disk_storages() {
     env_logger::init();

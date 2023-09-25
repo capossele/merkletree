@@ -7,7 +7,9 @@ use merkletree::hash::Algorithm;
 use merkletree::merkle::{
     get_merkle_tree_len_generic, get_merkle_tree_row_count, Element, MerkleTree,
 };
-use merkletree::store::{DiskStore, MmapStore, Store, StoreConfig, VecStore};
+#[cfg(feature = "std")]
+use merkletree::store::DiskStore;
+use merkletree::store::{MmapStore, Store, StoreConfig, VecStore};
 
 use common::{
     get_vector_of_base_trees, get_vector_of_base_trees_as_slices, instantiate_new_with_config,
@@ -235,6 +237,7 @@ fn test_compound_constructors() {
     let len = get_merkle_tree_len_generic::<U8, U8, U0>(base_tree_leaves)
         .expect("[test_compound_constructors] couldn't compute Merkle Tree len");
 
+    #[cfg(feature = "std")]
     // this instantiator works only with DiskStore / MmapStore trees
     run_test_compound_tree::<TestItemType, TestXOR128, DiskStore<TestItemType>, U8, U8>(
         instantiate_ctree_from_store_configs,
@@ -243,6 +246,7 @@ fn test_compound_constructors() {
         len,
         root_xor128,
     );
+    #[cfg(feature = "std")]
     run_test_compound_tree::<TestItemType, TestSha256Hasher, DiskStore<TestItemType>, U8, U8>(
         instantiate_ctree_from_store_configs,
         base_tree_leaves,

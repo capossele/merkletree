@@ -1,6 +1,7 @@
 #![cfg(not(tarpaulin_include))]
 use std::fmt;
 use std::hash::Hasher;
+#[cfg(feature = "std")]
 use std::io::Write;
 
 use sha2::{Digest, Sha256};
@@ -8,7 +9,9 @@ use typenum::Unsigned;
 
 use merkletree::hash::{Algorithm, Hashable};
 use merkletree::merkle::{Element, MerkleTree};
-use merkletree::store::{DiskStore, LevelCacheStore, Store, StoreConfig};
+#[cfg(feature = "std")]
+use merkletree::store::{DiskStore, LevelCacheStore};
+use merkletree::store::{Store, StoreConfig};
 
 /// This is the common utilities that we use for integration tests
 ///
@@ -246,6 +249,7 @@ pub fn test_disk_mmap_vec_tree_functionality<
     }
 }
 
+#[cfg(feature = "std")]
 pub fn test_levelcache_tree_functionality<
     E: Element,
     A: Algorithm<E>,
@@ -319,6 +323,7 @@ pub fn instantiate_new_with_config<E: Element, A: Algorithm<E>, S: Store<E>, U: 
     .expect("failed to instantiate tree [new_with_config]")
 }
 
+#[cfg(feature = "std")]
 pub fn dump_tree_data_to_replica<E: Element, BaseTreeArity: Unsigned>(
     leaves: usize,
     len: usize,

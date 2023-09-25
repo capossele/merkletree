@@ -1,4 +1,5 @@
 use std::marker::PhantomData;
+#[cfg(feature = "std")]
 use std::path::Path;
 use std::sync::{Arc, RwLock};
 
@@ -10,9 +11,9 @@ use typenum::{U0, U2};
 
 use crate::hash::{Algorithm, Hashable};
 use crate::proof::Proof;
-use crate::store::{
-    ExternalReader, LevelCacheStore, ReplicaConfig, Store, StoreConfig, VecStore, BUILD_CHUNK_NODES,
-};
+#[cfg(feature = "std")]
+use crate::store::{ExternalReader, LevelCacheStore, ReplicaConfig};
+use crate::store::{Store, StoreConfig, VecStore, BUILD_CHUNK_NODES};
 
 // Number of batched nodes processed and stored together when
 // populating from the data leaves.
@@ -199,6 +200,7 @@ pub trait Element: Ord + Clone + AsRef<[u8]> + Sync + Send + Default + std::fmt:
     fn copy_to_slice(&self, bytes: &mut [u8]);
 }
 
+#[cfg(feature = "std")]
 impl<
         E: Element,
         A: Algorithm<E>,

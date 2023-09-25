@@ -4,31 +4,42 @@
 use std::collections::hash_map::DefaultHasher;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
+#[cfg(feature = "std")]
 use std::fs::OpenOptions;
 use std::hash::Hasher;
+#[cfg(feature = "std")]
 use std::io::Write as ioWrite;
 use std::mem;
 use std::num::ParseIntError;
+#[cfg(feature = "std")]
 use std::os::unix::prelude::FileExt;
+#[cfg(feature = "std")]
 use std::path::Path;
 use std::slice;
 
 use byteorder::{ByteOrder, NativeEndian};
+#[cfg(feature = "std")]
 use rayon::iter::{plumbing::Producer, IntoParallelIterator, ParallelIterator};
 use sha2::{Digest, Sha256};
 use typenum::marker_traits::Unsigned;
+#[cfg(feature = "std")]
 use typenum::{U2, U3, U4, U5, U7, U8};
 
 use crate::hash::{Algorithm, Hashable};
+#[cfg(feature = "std")]
 use crate::merkle::{
-    get_merkle_tree_len, get_merkle_tree_row_count, is_merkle_tree_size_valid, log2_pow2,
-    next_pow2, Element, FromIndexedParallelIterator, MerkleTree,
+    get_merkle_tree_len, get_merkle_tree_row_count, is_merkle_tree_size_valid,
+    FromIndexedParallelIterator,
 };
+use crate::merkle::{log2_pow2, next_pow2, Element, MerkleTree};
+use crate::store::VecStore;
+#[cfg(feature = "std")]
 use crate::store::{
     DiskStore, DiskStoreProducer, ExternalReader, LevelCacheStore, ReplicaConfig, Store,
-    StoreConfig, StoreConfigDataVersion, VecStore, SMALL_TREE_BUILD,
+    StoreConfig, StoreConfigDataVersion, SMALL_TREE_BUILD,
 };
 
+#[cfg(feature = "std")]
 fn build_disk_tree_from_iter<U: Unsigned>(
     leafs: usize,
     len: usize,
@@ -62,6 +73,7 @@ fn build_disk_tree_from_iter<U: Unsigned>(
     assert_eq!(mt.row_count(), row_count);
 }
 
+#[cfg(feature = "std")]
 pub fn get_levelcache_tree_from_slice<U: Unsigned>(
     leafs: usize,
     len: usize,
@@ -95,6 +107,7 @@ pub fn get_levelcache_tree_from_slice<U: Unsigned>(
     mt
 }
 
+#[cfg(feature = "std")]
 fn get_levelcache_tree_from_iter<U: Unsigned>(
     leafs: usize,
     len: usize,
@@ -135,6 +148,7 @@ fn get_levelcache_tree_from_iter<U: Unsigned>(
     mt
 }
 
+#[cfg(feature = "std")]
 fn test_levelcache_v1_tree_from_iter<U: Unsigned>(
     leafs: usize,
     len: usize,
@@ -209,6 +223,7 @@ fn test_levelcache_v1_tree_from_iter<U: Unsigned>(
     }
 }
 
+#[cfg(feature = "std")]
 fn test_levelcache_direct_build_from_slice<U: Unsigned>(
     leafs: usize,
     len: usize,
@@ -256,6 +271,7 @@ fn test_levelcache_direct_build_from_slice<U: Unsigned>(
     }
 }
 
+#[cfg(feature = "std")]
 fn test_levelcache_direct_build_from_iter<U: Unsigned>(
     leafs: usize,
     len: usize,
@@ -301,6 +317,7 @@ fn test_levelcache_direct_build_from_iter<U: Unsigned>(
     }
 }
 
+#[cfg(feature = "std")]
 #[test]
 #[ignore]
 fn test_levelcache_direct_build_quad() {
@@ -311,6 +328,7 @@ fn test_levelcache_direct_build_quad() {
     test_levelcache_direct_build_from_slice::<U4>(leafs, len, row_count, num_challenges, None);
 }
 
+#[cfg(feature = "std")]
 #[test]
 #[ignore]
 fn test_levelcache_direct_build_octo() {
@@ -397,6 +415,7 @@ fn test_hasher_light() {
     run_test::<Item, Sha256Hasher>(number_of_hashing, input, expected_output);
 }
 
+#[cfg(feature = "std")]
 // B: Branching factor of sub-trees
 // N: Branching factor of top-layer
 fn test_compound_levelcache_tree_from_store_configs<B: Unsigned, N: Unsigned>(
@@ -500,6 +519,7 @@ fn test_compound_levelcache_tree_from_store_configs<B: Unsigned, N: Unsigned>(
     }
 }
 
+#[cfg(feature = "std")]
 #[test]
 fn test_compound_levelcache_quad_trees_from_store_configs() {
     // 3 quad trees each with 16 leafs joined by top layer
@@ -512,6 +532,7 @@ fn test_compound_levelcache_quad_trees_from_store_configs() {
     test_compound_levelcache_tree_from_store_configs::<U4, U7>(256);
 }
 
+#[cfg(feature = "std")]
 #[test]
 fn test_compound_levelcache_octrees_trees_from_store_configs() {
     // 3 octrees trees each with 64 leafs joined by top layer
@@ -524,6 +545,7 @@ fn test_compound_levelcache_octrees_trees_from_store_configs() {
     test_compound_levelcache_tree_from_store_configs::<U8, U7>(4096);
 }
 
+#[cfg(feature = "std")]
 #[test]
 fn test_small_quad_with_partial_cache() {
     let (leafs, len, row_count, num_challenges) = { (256, 341, 5, 256) };
@@ -538,6 +560,7 @@ fn test_small_quad_with_partial_cache() {
     }
 }
 
+#[cfg(feature = "std")]
 #[test]
 #[ignore]
 fn test_large_quad_with_partial_cache() {
@@ -556,6 +579,7 @@ fn test_large_quad_with_partial_cache() {
     }
 }
 
+#[cfg(feature = "std")]
 #[test]
 #[ignore]
 fn test_large_quad_with_partial_cache_full() {
@@ -564,6 +588,7 @@ fn test_large_quad_with_partial_cache_full() {
     test_levelcache_v1_tree_from_iter::<U4>(leafs, len, row_count, num_challenges, rows_to_discard);
 }
 
+#[cfg(feature = "std")]
 #[test]
 #[ignore]
 fn test_large_octo_with_partial_cache() {
@@ -582,6 +607,7 @@ fn test_large_octo_with_partial_cache() {
     }
 }
 
+#[cfg(feature = "std")]
 #[test]
 #[ignore]
 fn test_large_octo_with_partial_cache_full() {
@@ -599,6 +625,7 @@ fn test_large_octo_with_partial_cache_full() {
     );
 }
 
+#[cfg(feature = "std")]
 #[test]
 #[ignore]
 fn test_xlarge_octo_with_partial_cache() {
@@ -616,6 +643,7 @@ fn test_xlarge_octo_with_partial_cache() {
     );
 }
 
+#[cfg(feature = "std")]
 #[test]
 fn test_read_into() {
     let x = [String::from("ars"), String::from("zxc")];
@@ -654,6 +682,7 @@ fn test_read_into() {
     }
 }
 
+#[cfg(feature = "std")]
 #[test]
 fn test_level_cache_tree_v1() {
     let rows_to_discard = 4;
@@ -668,6 +697,7 @@ fn test_level_cache_tree_v1() {
     );
 }
 
+#[cfg(feature = "std")]
 #[test]
 fn test_level_cache_tree_v2() {
     let a = XOR128::new();
@@ -780,6 +810,7 @@ fn test_level_cache_tree_v2() {
     }
 }
 
+#[cfg(feature = "std")]
 #[test]
 fn test_various_trees_with_partial_cache_v2_only() {
     env_logger::init();
@@ -962,6 +993,7 @@ fn test_various_trees_with_partial_cache_v2_only() {
     }
 }
 
+#[cfg(feature = "std")]
 #[test]
 fn test_parallel_iter_disk_1() {
     let data = vec![1u8; 16 * 128];
@@ -1037,6 +1069,7 @@ fn test_parallel_iter_disk_1() {
     assert_eq!(i, 0);
 }
 
+#[cfg(feature = "std")]
 #[test]
 fn test_parallel_iter_disk_2() {
     for size in &[2, 4, 5, 99, 128] {
@@ -1067,7 +1100,9 @@ fn test_parallel_iter_disk_2() {
 
 pub const SIZE: usize = 0x10;
 
+#[cfg(feature = "std")]
 pub const BINARY_ARITY: usize = 2;
+#[cfg(feature = "std")]
 pub const OCT_ARITY: usize = 8;
 
 pub type Item = [u8; SIZE];

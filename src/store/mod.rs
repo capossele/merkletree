@@ -1,12 +1,17 @@
+#[cfg(feature = "std")]
 use std::fmt;
+#[cfg(feature = "std")]
 use std::fs::OpenOptions;
+#[cfg(feature = "std")]
 use std::io::Read;
+
 use std::iter::FromIterator;
 use std::ops;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
 
 use anyhow::Result;
+#[cfg(feature = "std")]
 use positioned_io::ReadAt;
 use rayon::iter::plumbing::*;
 use rayon::iter::*;
@@ -27,30 +32,35 @@ pub const SMALL_TREE_BUILD: usize = 1024;
 
 // Number of nodes to process in parallel during the `build` stage.
 pub const BUILD_CHUNK_NODES: usize = 1024 * 4;
-
+#[cfg(feature = "std")]
 mod disk;
+#[cfg(feature = "std")]
 mod level_cache;
+
 mod mmap;
 mod vec;
 
+#[cfg(feature = "std")]
 pub use disk::DiskStore;
+#[cfg(feature = "std")]
 pub use level_cache::LevelCacheStore;
 pub use mmap::MmapStore;
 pub use vec::VecStore;
 
+#[cfg(feature = "std")]
 #[derive(Clone)]
 pub struct ExternalReader<R: Read + Send + Sync> {
     pub offset: usize,
     pub source: R,
     pub read_fn: fn(start: usize, end: usize, buf: &mut [u8], source: &R) -> Result<usize>,
 }
-
+#[cfg(feature = "std")]
 impl<R: Read + Send + Sync> ExternalReader<R> {
     pub fn read(&self, start: usize, end: usize, buf: &mut [u8]) -> Result<usize> {
         (self.read_fn)(start + self.offset, end + self.offset, buf, &self.source)
     }
 }
-
+#[cfg(feature = "std")]
 impl ExternalReader<std::fs::File> {
     pub fn new_from_config(replica_config: &ReplicaConfig, index: usize) -> Result<Self> {
         let reader = OpenOptions::new().read(true).open(&replica_config.path)?;
@@ -70,7 +80,7 @@ impl ExternalReader<std::fs::File> {
         Self::new_from_config(&ReplicaConfig::from(path), 0)
     }
 }
-
+#[cfg(feature = "std")]
 impl<R: Read + Send + Sync> fmt::Debug for ExternalReader<R> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("ExternalReader")
@@ -625,5 +635,6 @@ macro_rules! impl_parallel_iter {
 }
 
 impl_parallel_iter!(VecStore, VecStoreProducer, VecStoreIter);
+#[cfg(feature = "std")]
 impl_parallel_iter!(DiskStore, DiskStoreProducer, DiskIter);
 //impl_parallel_iter!(LevelCacheStore, LevelCacheStoreProducer, LevelCacheIter);
